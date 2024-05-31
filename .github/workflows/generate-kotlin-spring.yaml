@@ -5,7 +5,7 @@ on:
     workflows: ["OpenAPI Compile"]
     branches: [main]
     types: 
-      - completed
+      - success
 
 jobs:
   generate-kotlin-spring:
