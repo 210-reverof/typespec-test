@@ -1,0 +1,43 @@
+name: Generate Kotlin client code
+
+on:
+  workflow_run:
+    workflows: ["Generate Kotlin Spring code"]
+    branches: [main]
+    types: 
+      - completed
+
+jobs:
+  generate-kotlin-client:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+
+      - name: Generate Kotlin client code
+        run: |
+          docker run --rm -v ${GITHUB_WORKSPACE}:/local openapitools/openapi-generator-cli generate \
+            -i /local/generated/openapi.yaml \
+            -g kotlin \
+            -o /local/generated/kotlin
+
+      - name: Commit and push Kotlin code
+        run: |
+          cd ${GITHUB_WORKSPACE}/generated/kotlin
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          if [ -n "$(git status --porcelain)" ]; then
+            git add .
+            git commit -m "Generate Kotlin client code"
+            git push origin main --force
+          else
+            echo "No changes to commit"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
