@@ -5,10 +5,11 @@ on:
     workflows: ["OpenAPI Compile"]
     branches: [main]
     types: 
-      - success
+      - completed
 
 jobs:
   generate-kotlin-spring:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
