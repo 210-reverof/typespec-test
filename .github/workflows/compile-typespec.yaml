@@ -1,0 +1,47 @@
+name: OpenAPI Compile
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Repository checkout
+      uses: actions/checkout@v3
+
+    - name: Node.js settings
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+
+    - name: Add Dependencies
+      run: npm install @typespec/openapi3
+
+    - name: OpenAPI Compile
+      run: npx tsp compile ./postapi.tsp --emit=@typespec/openapi3
+
+    - name: Move Directory
+      run: |
+        mkdir -p ./generated
+        mv ./tsp-output/@typespec/openapi3/openapi.yaml ./generated/openapi.yaml || echo "파일 이동 실패: 파일이 존재하지 않습니다."
+
+    - name: Push Commits
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git add .
+        git restore --staged node_modules/ package.json package-lock.json
+
+        # Check if there are any staged changes
+        if git diff --cached --quiet; then
+          echo "No changes to commit."
+        else
+          git commit -m 'Add Generated OpenAPI yaml file'
+          git push
+        fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
