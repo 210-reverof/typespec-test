@@ -1,0 +1,229 @@
+openapi: 3.0.0
+info:
+  title: Post Service
+  version: 0.0.0
+servers:
+- description: Post API Endpoint
+  url: https://post-example.com/api
+paths:
+  /login:
+    post:
+      operationId: Login_post
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login_post_request'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthToken'
+          description: The request has succeeded.
+  /posts:
+    get:
+      operationId: Posts_list
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Posts_list_request'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Post'
+                type: array
+          description: The request has succeeded.
+    post:
+      operationId: Posts_post
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Posts_post_request'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+          description: The request has succeeded.
+  /register:
+    post:
+      operationId: Register_post
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Register_post_request'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: The request has succeeded.
+components:
+  schemas:
+    AuthToken:
+      example:
+        expiresIn: 0
+        accessToken: accessToken
+        refreshToken: refreshToken
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        expiresIn:
+          format: int32
+          type: integer
+      required:
+      - accessToken
+      - expiresIn
+      - refreshToken
+      type: object
+    LoginCredentials:
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required:
+      - password
+      - username
+      type: object
+    NewPost:
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+      required:
+      - content
+      - title
+      type: object
+    NewUser:
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+      required:
+      - email
+      - password
+      - username
+      type: object
+    Post:
+      example:
+        createdAt: 2000-01-23T04:56:07.000+00:00
+        author:
+          createdAt: 2000-01-23T04:56:07.000+00:00
+          id: id
+          email: email
+          username: username
+        id: id
+        title: title
+        content: content
+        updatedAt: 2000-01-23T04:56:07.000+00:00
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        content:
+          type: string
+        author:
+          $ref: '#/components/schemas/User'
+        createdAt:
+          format: date-time
+          type: string
+        updatedAt:
+          format: date-time
+          type: string
+      required:
+      - author
+      - content
+      - createdAt
+      - id
+      - title
+      - updatedAt
+      type: object
+    Sample:
+      properties:
+        name:
+          type: string
+        age:
+          format: int64
+          type: integer
+      required:
+      - age
+      - name
+      type: object
+    User:
+      example:
+        createdAt: 2000-01-23T04:56:07.000+00:00
+        id: id
+        email: email
+        username: username
+      properties:
+        id:
+          type: string
+        username:
+          type: string
+        email:
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+      required:
+      - createdAt
+      - email
+      - id
+      - username
+      type: object
+    Login_post_request:
+      properties:
+        credentials:
+          $ref: '#/components/schemas/LoginCredentials'
+      required:
+      - credentials
+      type: object
+    Posts_list_request:
+      properties:
+        authorization:
+          type: string
+      required:
+      - authorization
+      type: object
+    Posts_post_request:
+      properties:
+        post:
+          $ref: '#/components/schemas/NewPost'
+        authorization:
+          type: string
+      required:
+      - authorization
+      - post
+      type: object
+    Register_post_request:
+      properties:
+        user:
+          $ref: '#/components/schemas/NewUser'
+      required:
+      - user
+      type: object
