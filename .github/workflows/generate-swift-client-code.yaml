@@ -1,0 +1,37 @@
+name: Generate Swift client code
+
+on:
+  workflow_run:
+    workflows: ["Generate Kotlin client code"]
+    branches: [main]
+    types: 
+      - completed
+
+jobs:
+  generate-swift-client:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Generate Swift client code
+        run: |
+          docker run --rm -v ${GITHUB_WORKSPACE}:/local openapitools/openapi-generator-cli generate \
+            -i /local/generated/openapi.yaml \
+            -g swift5 \
+            -o /local/generated/swift
+
+      - name: Commit and push Swift code
+        run: |
+          cd ${GITHUB_WORKSPACE}/generated/swift
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          if [ -n "$(git status --porcelain)" ]; then
+            git add .
+            git commit -m "Generate Swift client code"
+            git push origin main --force
+          else
+            echo "No changes to commit"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
