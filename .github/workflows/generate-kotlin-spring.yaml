@@ -1,0 +1,43 @@
+name: Generate Kotlin Spring code
+
+on:
+  workflow_run:
+    workflows: ["OpenAPI Compile"]
+    branches: [main]
+    types: 
+      - completed
+
+jobs:
+  generate-kotlin-spring:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+
+      - name: Generate Kotlin Spring code
+        run: |
+          docker run --rm -v ${GITHUB_WORKSPACE}:/local openapitools/openapi-generator-cli generate \
+            -i /local/generated/openapi.yaml \
+            -g kotlin-spring \
+            -o /local/generated/kotlin-spring
+
+      - name: Commit and push Kotlin Spring code
+        run: |
+          cd ${GITHUB_WORKSPACE}/generated/kotlin-spring
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          if [ -n "$(git status --porcelain)" ]; then
+            git add .
+            git commit -m "Generate Kotlin Spring server code"
+            git push origin main --force
+          else
+            echo "No changes to commit"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
